@@ -13,7 +13,7 @@ use DevIo; # load DevIo.pm if not already loaded
 
 
 # called upon loading the module SnapControl
-sub ControlNoti_Initialize($)
+sub PresConnect2Snap_Initialize($)
 {
   my ($hash) = @_;
   $hash->{DefFn}    = "ControlNoti_Define";
@@ -23,7 +23,7 @@ sub ControlNoti_Initialize($)
 }
 
 # Enter you functions below _this_ line.
-sub ControlNoti_Define($$)
+sub PresConnect2Snap_Define($$)
 {
   my ($hash, $def) = @_;
   my @a = split("[ \t]+", $def);
@@ -45,7 +45,7 @@ sub ControlNoti_Define($$)
   return undef;
 }
 
-sub ControlNoti_Undef($$)
+sub PresConnect2Snap_Undef($$)
 {
   my ($hash, $name) = @_; 
   return undef;
@@ -53,7 +53,7 @@ sub ControlNoti_Undef($$)
 
 
 
-sub ControlNoti_Notify($$)
+sub PresConnect2Snap_Notify($$)
 {
   my ($hash, $device_hash) = @_;
   my $deviceName      = $device_hash->{NAME}; # device name / hash
@@ -66,34 +66,28 @@ sub ControlNoti_Notify($$)
   my $number          = looks_like_number($room);
 
   if(!$events){ 
-    # When $events not 
-    Log 1, "nothing happend"; 
+	# When $events is not generated
+    Log 1, "nothing happens"; 
 
   }else{
 
-	# Update Readings opt1
-#	readingsSingleUpdate($hash, "presence", $deviceStatus, 1) if defined ($deviceStatus);
-#	readingsSingleUpdate($hash, "room", $room, 1) if defined ($room); 
-#	readingsSingleUpdate($hash, "rssi", $rssi, 1) if defined ($rssi);
-
-	# Update Readings opt2
+	# Update Readings
 	# All default-value are 0
 	readingsBeginUpdate($hash);
 	readingsBulkUpdateIfChanged($hash, "presence", $deviceStatus, 1);
 	readingsBulkUpdateIfChanged($hash, "room", $room, 1);
-	readingsBulkUpdateIfChanged($hash, "rssi", $rssi, 1);
-	readingsEndUpdate($hash, 1);
-
+	readingsEndUpdate($hash, 0);
 
 		if($deviceStatus eq "present" && $rssi >= -5 && !$number){
 
-        	 	Log 2, "Someone is in the $room";
+        	 	Log 2, "$deviceName is in the $room";
 
 	    	}elsif($deviceStatus eq "absent"){
 		# if client doesnt detect the device(abesnt), 
-		# the name of client(room) wont be shown on the Readings. 
+		# the name of client(room) wont be shown on the Readings
+		# and the state will be absent.
 
-			Log 2, "Device is $deviceStatus";
+			Log 2, "$deviceName is $deviceStatus";
 
 		}elsif($rssi < -5){
 	
