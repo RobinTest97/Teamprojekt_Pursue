@@ -22,7 +22,13 @@ sub PresConnect2Snap_Initialize($)
  
 }
 
-# Enter you functions below _this_ line.
+
+####################################################
+# Define a device the Type is "PresConnect2Snap" 
+# 
+# e.g. define <name> PresConnect2Snap <deviceName>
+#
+####################################################
 sub PresConnect2Snap_Define($$)
 {
   my ($hash, $def) = @_;
@@ -30,9 +36,9 @@ sub PresConnect2Snap_Define($$)
 
   my $name = $a[0];
   
-  # $a[1] is always equals the module name "ControlNoti"
+  # $a[1] is always equals the module name
   
-  # deviceName. define [name] ControlNoti [deviceName]
+  # deviceName
   my $dev = $a[2]; 
 
   return "no device given" unless($dev);
@@ -52,7 +58,10 @@ sub PresConnect2Snap_Undef($$)
 }
 
 
-
+####################################################
+# Trigger a activity when received an event for the
+# update of value "room" from PRESENCE.
+####################################################
 sub PresConnect2Snap_Notify($$)
 {
   my ($hash, $device_hash) = @_;
