@@ -11,7 +11,6 @@ use warnings;
 use JSON::XS;
 use DevIo; # load DevIo.pm if not already loaded
 
-#my $room = "";
 
 # called upon loading the module SnapControl
 sub ControlNoti_Initialize($)
@@ -38,12 +37,10 @@ sub ControlNoti_Define($$)
 
   return "no device given" unless($dev);
 
-   readingsSingleUpdate($hash, "state", "activate", 1);
-
-  # readingsBeginUpdate($hash);
-  # readingsBulkUpdate($hash, 'presence', '');
-  # readingsBulkUpdate($hash, 'room', '');
-  # readingsEndUpdate($hash, 0);
+# Limits of specific devices whose NOTIFYDEV is global and TYPE is PRESENCE for the Notify
+  $hash->{NOTIFYDEV} = "global,TYPE=PRESENCE";
+  
+  readingsSingleUpdate($hash, "state", "activate", 1);
 
   return undef;
 }
