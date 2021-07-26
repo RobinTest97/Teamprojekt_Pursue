@@ -127,21 +127,13 @@ sub SnapControl_Set($$@)
     {
 		if($args[0] eq "spotify")
 		{
-			@match = ();
-			@match = grep /$args[3]/, $hash{AllowedUsers};
-			if (@match != 0){
 			Log 1, "{\"id\":8,\"jsonrpc\":\"2.0\",\"method\":\"Stream.AddStream\",\"params\":{\"streamUri\":\"librespot:///librespot?name=".$args[3]."&username=".$args[1]."&password=".$args[2]."&killall=false\"}}\n";
-			DevIo_SimpleWrite($hash, "{\"id\":8,\"jsonrpc\":\"2.0\",\"method\":\"Stream.AddStream\",\"params\":{\"streamUri\":\"librespot:///librespot?name=".$args[3]."&username=".$args[1]."&password=".$args[2]."&killall=false\"}}\n", 2);
-			} else
-			Log 1, "Authentifikation für Anlegen eines Snapcast Stream fehlgeschlagen,".$args[3]." ist nicht als gültige MAC-Adresse gespeichert!";
+		DevIo_SimpleWrite($hash, "{\"id\":8,\"jsonrpc\":\"2.0\",\"method\":\"Stream.AddStream\",\"params\":{\"streamUri\":\"librespot:///librespot?name=".$args[3]."&username=".$args[1]."&password=".$args[2]."&killall=false\"}}\n", 2);
         # DevIo_SimpleWrite($hash, "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Server.GetStatus\"}\n", 2);
 		}
     }elsif($cmd eq "register")
     {
-		#internal
-		push($hash{allowedUsers},$args[0]);
-		#global array
-		#push(@allowedUsers,$args[0]);
+		push(@allowedUsers,$args[0]);
     }
     elsif($cmd eq "off")
     {
