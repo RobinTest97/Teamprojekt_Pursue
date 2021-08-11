@@ -9,8 +9,9 @@ package main;
 use strict;
 use warnings;
 use JSON::XS;
-use DevIo; # load DevIo.pm if not already loaded
 
+# name of the SnapControl-device is stored as a global variable
+my $snapDev = '';
 
 # called upon loading the module SnapControl
 sub PresConnect2Snap_Initialize($)
@@ -23,27 +24,32 @@ sub PresConnect2Snap_Initialize($)
 }
 
 
-####################################################
+########################################################################################################
 # Define a device the Type is "PresConnect2Snap" 
 # 
-# e.g. define <name> PresConnect2Snap <deviceName>
+# e.g. define <deviceName> PresConnect2Snap <PRESENCE-deviceName> <SnapControl-deviceName>
 #
-####################################################
+########################################################################################################
 sub PresConnect2Snap_Define($$)
 {
   my ($hash, $def) = @_;
   my @a = split("[ \t]+", $def);
-  return "Wrong syntax: use define <name> PresConnect2Snap <deviceName>" if(int(@a) != 3);
+  return "Wrong syntax: use define <deviceName> PresConnect2Snap <PRESENCE-deviceName> <SnapControl-deviceName>" if(int(@a) != 4);
   my $name = $a[0];
   
-  # $a[1] is always equals the module name
+# $a[1] is always equals the module name
   
-  # deviceName
+# name of Presence-device
   my $dev = $a[2]; 
   my $type = InternalVal($dev, "TYPE", 0); 
   return "no device given" unless($dev);
   return "device should be defined" unless($type);
   return "type of device should be PRESENCE" unless($type eq 'PRESENCE'); # Limits the type of defined device 
+
+# name of SnapControl-device 
+  $snapDev = $a[3];
+  my $snapType = InternalVal($snapDev, "TYPE", 0);
+  return "type of device should be SnapControl" unless($snapType eq 'SnapControl');
 
 # Limits of specific devices whose NOTIFYDEV is global and TYPE is PRESENCE for the Notify
   $hash->{NOTIFYDEV} = "global,TYPE=PRESENCE";
@@ -91,14 +97,15 @@ sub PresConnect2Snap_Notify($$)
 
 		if($deviceStatus eq "present" && $rssi >= -5 && !$number){
 
-        	 	Log 2, "$deviceName is in the $room, $macaddr";
-
+        	 	Log 2, "$deviceName is in the $room";
+			fhem("set $snapDev setStreamLocation $room $macaddr");
+			
 	    	}elsif($deviceStatus eq "absent"){
-		# if client doesnt detect the device(abesnt), 
-		# the name of client(room) wont be shown on the Readings
-		# and the state will be absent.
+		# if client doesnt detect the device(abesnt) 
+		# the value of MAC-Address in SnapControl will be set as default
 
-			Log 2, "$deviceName is $deviceStatus, $macaddr";
+			Log 2, "$deviceName is $deviceStatus";
+			fhem("set $snapDev setStreamLocation $room default");
 
 		}elsif($rssi < -5){
 	
@@ -122,17 +129,19 @@ sub PresConnect2Snap_Notify($$)
 <a id="PresConnect2Snap"></a>
 <h3>PresConnect2Snap</h3>
 <ul>
-    <i>PresConnect2Snap</i> This modul is used to connect the other moduls PRESENCE und SnapControl.
+    <i>PresConnect2Snap</i> This modul is used to send parameters "Roomname" and "Bluetooth-MAC-Address" from PRESENCE to SnapControl.
     <br><br>
     <a id="PresConnect2Snap-define"></a>
     <b>Define</b>
     <ul>
-        <code>define <name> PresConnect2Snap <deviceName></code>
+        <code>define <deviceName> PresConnect2Snap <PRESENCE-deviceName> <SnapControl-deviceName></code>
         <br><br>
-        Example: <code> define PresNoti PresConnect2Snap MusterIphone</code>
+        Example: <code> define PresNoti PresConnect2Snap MyPhone MySnap</code>
         <br><br>
-        The parameter of <deviceName> must be already defined, and whose Type must be
-        "PRESENCE". If not, it will be shown a Message on FHEM-Web to ask for change.
+        The first parameter <deviceName> means the name for the device whose type is this modul "PresConnect2Snap".
+	Second one <PRESENCE-deviceName> for PRESENCE, thus the used parameter must be already defined as "PRESENCE". 
+	If not, it will be shown a Message on FHEM-Web to ask for change. 
+	Its in the same way by third parameter <SnapControl-deviceName>, the device must be deined as "SnapControl".
     </ul>
     <br>
     <br>
