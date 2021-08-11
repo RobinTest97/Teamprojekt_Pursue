@@ -114,3 +114,30 @@ sub PresConnect2Snap_Notify($$)
 } # sub
 
 1;
+
+
+=pod
+=begin html
+
+<a id="PresConnect2Snap"></a>
+<h3>PresConnect2Snap</h3>
+<ul>
+    <i>PresConnect2Snap</i> This modul is used to connect the other moduls PRESENCE und SnapControl.
+    <br><br>
+    <a id="PresConnect2Snap-define"></a>
+    <b>Define</b>
+    <ul>
+        <code>define <name> PresConnect2Snap <deviceName></code>
+        <br><br>
+        Example: <code> define PresNoti PresConnect2Snap MusterIphone</code>
+        <br><br>
+        The parameter of <deviceName> must be already defined, and whose Type must be
+        "PRESENCE". If not, it will be shown a Message on FHEM-Web to ask for change.
+    </ul>
+    <br>
+    <br>
+</ul>
+
+=end html
+
+=cut
