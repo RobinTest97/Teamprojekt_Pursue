@@ -16,9 +16,9 @@ use DevIo; # load DevIo.pm if not already loaded
 sub PresConnect2Snap_Initialize($)
 {
   my ($hash) = @_;
-  $hash->{DefFn}    = "ControlNoti_Define";
-  $hash->{UndefFn}  = "ControlNoti_Undef";
-  $hash->{NotifyFn} = "ControlNoti_Notify";
+  $hash->{DefFn}    = "PresConnect2Snap_Define";
+  $hash->{UndefFn}  = "PresConnect2Snap_Undef";
+  $hash->{NotifyFn} = "PresConnect2Snap_Notify";
  
 }
 
@@ -33,15 +33,17 @@ sub PresConnect2Snap_Define($$)
 {
   my ($hash, $def) = @_;
   my @a = split("[ \t]+", $def);
-
+  return "Wrong syntax: use define <name> PresConnect2Snap <deviceName>" if(int(@a) != 3);
   my $name = $a[0];
   
   # $a[1] is always equals the module name
   
   # deviceName
   my $dev = $a[2]; 
-
+  my $type = InternalVal($dev, "TYPE", 0); 
   return "no device given" unless($dev);
+  return "device should be defined" unless($type);
+  return "type of device should be PRESENCE" unless($type eq 'PRESENCE'); # Limits the type of defined device 
 
 # Limits of specific devices whose NOTIFYDEV is global and TYPE is PRESENCE for the Notify
   $hash->{NOTIFYDEV} = "global,TYPE=PRESENCE";
@@ -65,11 +67,11 @@ sub PresConnect2Snap_Undef($$)
 sub PresConnect2Snap_Notify($$)
 {
   my ($hash, $device_hash) = @_;
-  my $deviceName      = $device_hash->{NAME}; # device name / hash
-
-  my $room 	      = $device_hash->{READINGS}{room}{VAL};
+  my $deviceName      = $device_hash->{NAME}; # name of device (value from Internals)
+  my $macaddr	      = $device_hash->{ADDRESS}; # Bluetoothe-MAC-address of device (value from Internals)
+  my $room 	      = $device_hash->{READINGS}{room}{VAL}; # (value from Readings)
   my $rssi            = $device_hash->{READINGS}{rssi}{VAL}; # $hash->{READINGS}{"rssi_$deviceName"}{VAL} for RSSIvalue of device
-  my $deviceStatus    = $device_hash->{READINGS}{presence}{VAL}; # for status of device: absent/present
+  my $deviceStatus    = $device_hash->{READINGS}{presence}{VAL}; # status of device: absent/present
   my $events	      = deviceEvents($device_hash, 1);
  
   my $number          = looks_like_number($room);
@@ -89,14 +91,14 @@ sub PresConnect2Snap_Notify($$)
 
 		if($deviceStatus eq "present" && $rssi >= -5 && !$number){
 
-        	 	Log 2, "$deviceName is in the $room";
+        	 	Log 2, "$deviceName is in the $room, $macaddr";
 
 	    	}elsif($deviceStatus eq "absent"){
 		# if client doesnt detect the device(abesnt), 
 		# the name of client(room) wont be shown on the Readings
 		# and the state will be absent.
 
-			Log 2, "$deviceName is $deviceStatus";
+			Log 2, "$deviceName is $deviceStatus, $macaddr";
 
 		}elsif($rssi < -5){
 	
@@ -112,3 +114,30 @@ sub PresConnect2Snap_Notify($$)
 } # sub
 
 1;
+
+
+=pod
+=begin html
+
+<a id="PresConnect2Snap"></a>
+<h3>PresConnect2Snap</h3>
+<ul>
+    <i>PresConnect2Snap</i> This modul is used to connect the other moduls PRESENCE und SnapControl.
+    <br><br>
+    <a id="PresConnect2Snap-define"></a>
+    <b>Define</b>
+    <ul>
+        <code>define <name> PresConnect2Snap <deviceName></code>
+        <br><br>
+        Example: <code> define PresNoti PresConnect2Snap MusterIphone</code>
+        <br><br>
+        The parameter of <deviceName> must be already defined, and whose Type must be
+        "PRESENCE". If not, it will be shown a Message on FHEM-Web to ask for change.
+    </ul>
+    <br>
+    <br>
+</ul>
+
+=end html
+
+=cut
