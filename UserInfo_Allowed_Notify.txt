@@ -1,0 +1,21 @@
+userInfo:.* {
+
+my $counter = 0;
+my $basicAuth ="attr admin basicAuth \{";
+
+
+while(ReadingsVal("userInfo",$counter.".username","?") ne "?" && ReadingsVal("userInfo",$counter.".passwort","?") ne "?" )
+{
+   if($counter !=0){
+         $basicAuth = $basicAuth."||";
+    } 
+my $username= ReadingsVal("userInfo",$counter.".username","?");
+my $password= ReadingsVal("userInfo",$counter.".passwort","?");
+
+$basicAuth=  $basicAuth."\(\"\$user:\$password\" eq \"".$username.":".$password."\" \)";
+ 
+
+$counter= $counter + 1;
+}
+fhem($basicAuth."\}");
+    }

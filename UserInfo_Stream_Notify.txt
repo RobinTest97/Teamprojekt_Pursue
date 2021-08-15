@@ -1,0 +1,17 @@
+$counter = 0;
+
+
+while(ReadingsVal("userInfo",$counter.".username","?") ne "?" && ReadingsVal("userInfo",$counter.".passwort","?") ne "?" )
+{
+  
+
+my $mac = ReadingsVal("userInfo",$counter.".macAdresse","?");
+
+
+
+fhem("set MySnap register  ".$mac );
+
+$counter= $counter + 1;
+}
+
+    }

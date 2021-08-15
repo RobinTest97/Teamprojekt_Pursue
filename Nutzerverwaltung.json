@@ -1,0 +1,22 @@
+[
+    {
+        "username": "Klaus",
+        "passwort": "123456",
+        "macAdresse": "0C:77:1A:D8:86:B9"
+    },
+    {
+        "username": "Robin",
+        "passwort": "12345",
+        "macAdresse": "3C:77:1A:D8:86:B9"
+    },
+    {
+        "username": "Jan",
+        "passwort": "12345",
+        "macAdresse": "2C:77:1A:D8:86:B9"
+    },
+    {
+        "username": "Wael",
+        "passwort": "wael",
+        "macAdresse": "1C:77:1A:D8:86:B9"
+    }
+]
