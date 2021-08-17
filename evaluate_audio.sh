@@ -1,22 +1,25 @@
 #!/bin/bash
-#requires the ALSA Loopback Device ($sudo modprobe snd-aloop)
 
-#Record and play on the Loopback device
-arecord -D hw:1,0,1 -f cd -r $2 recorded.wav &
-sleep 0.5
-aplay -D hw:1,1,1 $1
-pkill -f arecord
+parecord --channels=2 --rate=$2 -d alsa_output.pci-0000_00_05.0.analog-stereo.monitor recorded.wav &
+sleep 0.01
+paplay $1
+pkill -f parecord
 sleep 1
 
-#determine length of the original audiofile
-LENGTH=$(soxi -D $1)
-#offset to remove at the end of the file
-LENGTH=$(echo "$LENGTH - 0.008353" | bc)
-
-#cut the recorded audiofile to match with the original
-ffmpeg -ss 0.49159 -i recorded.wav -c copy -t $LENGTH -y cut_recorded.wav
+ffmpeg -i recorded.wav -c copy -hide_banner -loglevel error -y cut_recorded.wav
 sleep 1
-
-#compare the audiofiles (requires peaqb)
-sudo /usr/local/bin/./peaqb -r $1 -t cut_recorded.wav
+$(/usr/local/bin/./sndfile-cmp $1 cut_recorded.wav > offset.txt)
+offset=$(awk 'NF>1{print $NF}' offset.txt | grep -o '[0-9]\+')
+while [ $offset -eq 0 ]
+do
+start=$(echo "$offset+1" |bc)
+start1=$(echo "$start*0.0002083" |bc |awk '{printf "%f", $0}')
+ffmpeg -ss $start1 -i cut_recorded.wav -c copy -y recorded.wav
+sleep 1
+ffmpeg -i recorded.wav -c copy -hide_banner -loglevel error -y cut_recorded.wav
+sleep 1
+$(/usr/local/bin/./sndfile-cmp $1 cut_recorded.wav > offset.txt)
+offset=$(awk 'NF>1{print $NF}' offset.txt | grep -o '[0-9]\+')
+done
+#sudo /usr/local/bin/./peaqb -r $1 -t cut_recorded.wav
 exit
