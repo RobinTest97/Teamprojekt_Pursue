@@ -4,13 +4,13 @@ my $counter = 0;
 my $basicAuth ="attr admin basicAuth \{";
 
 
-while(ReadingsVal("userInfo",$counter.".username","?") ne "?" && ReadingsVal("userInfo",$counter.".passwort","?") ne "?" )
+while(ReadingsVal("userInfo",$counter.".username","?") ne "?" && ReadingsVal("userInfo",$counter.".password","?") ne "?" )
 {
    if($counter !=0){
          $basicAuth = $basicAuth."||";
     } 
 my $username= ReadingsVal("userInfo",$counter.".username","?");
-my $password= ReadingsVal("userInfo",$counter.".passwort","?");
+my $password= ReadingsVal("userInfo",$counter.".password","?");
 
 $basicAuth=  $basicAuth."\(\"\$user:\$password\" eq \"".$username.":".$password."\" \)";
  
