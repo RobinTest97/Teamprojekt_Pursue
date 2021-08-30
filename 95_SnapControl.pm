@@ -8,6 +8,8 @@ use DevIo; # load DevIo.pm if not already loaded
 my %streamLocations = ();
 my %streamClients = ();
 my $zwERG ="";
+my $recentLocation="";
+my $recentStream="";
 
 # called upon loading the module SnapControl
 sub SnapControl_Initialize($)
@@ -44,7 +46,7 @@ sub SnapControl_Define($$)
   # set the IP/Port for DevIo
   $hash->{DeviceName} = $dev;
     
-  # open connection with custom init and error callback function (non-blocking connection establishment)
+  # open connection with custom init and error callback function (non-blocking connection innitiation)
   DevIo_OpenDev($hash, 0, "SnapControl_Init", "SnapControl_Callback"); 
  
   return undef;
@@ -82,36 +84,43 @@ sub SnapControl_Read($)
   # read the available data
   my $buf = DevIo_SimpleRead($hash);
   
-  Log 1, "SnapControl ($name) - received: $buf";
+  #Log 1, "SnapControl ($name) - received: $buf";
   
   # stop processing if no data is available (device disconnected)
   return if(!defined($buf));
-  
-  
-  my $response = eval { decode_json($buf) };
-  if($@){
-	$zwERG .= $buf;  #decode failed -> must be combined with next String
-  }else {
-		$buf = "";
-		if($response->{id} eq "32494"){
-			Log3 $name, 5, "SnapControl ($name) - received: $response"; 
-			foreach (@{$response->{result}->{server}->{groups}}){
-				my $groupID=$_->{id};
-				foreach (@{$_->{clients}}){
-					$streamClients{${$_->{id}}}=$groupID;
-				}
-			}
-		}elsif($response->{id} eq "9"){
-			if(exists $streamLocations{${$response->{result}->{stream_id}}}){
-				my $groupID=$streamClients{$streamLocations{${$response->{result}->{stream_id}}}};
-				DevIo_SimpleWrite($hash, "{\"id\":10,\"jsonrpc\":\"2.0\",\"method\":\"Group.SetStream\",\"params\":{\"id\":".$groupID."\",\"stream_id\":\"default\"}}",2);
-			}
-		}
+  my $response;
+  {
+	local $@;
+	$response = eval { decode_json($buf) };
+	if($@){
+		$zwERG .= $buf;  #decode failed -> must be combined with previous String
+	}
   }
   
-  #
-  # do something with $buf, e.g. generate readings, send answers via DevIo_SimpleWrite(), ...
-  #
+  {
+	local $@;
+	if(!($response)){
+		my $response = eval { decode_json($zwERG) };
+	}
+	if($@){
+		$zwERG = "";
+		#combined Strings make up a valid JSON
+		#zwERG is cleared for next JSON combination
+		if($response->{id} eq "9"){
+			#messages with id 9 are SetStream - answers
+			if(exists $streamLocations{${$response->{result}->{stream_id}}}){
+				my $groupID=$streamClients{$streamLocations{${$response->{result}->{stream_id}}}};
+				#Location where Stream was played before will be set idle
+				DevIo_SimpleWrite($hash, "{\"id\":10,\"jsonrpc\":\"2.0\",\"method\":\"Group.SetStream\",\"params\":{\"id\":".$groupID."\",\"stream_id\":\"default\"}}",2);
+			}
+		}elsif($response->{id} eq "10"){
+			#messages with id 10 are answers for silencing an old snapclient
+				$streamLocations{$recentStream}=$recentLocation;
+				$recentStream="";
+				$recentLocation="";
+		}
+	}
+  }
 }
 
 
@@ -121,24 +130,43 @@ sub SnapControl_Set($$@)
 {
     my ($hash, $name, $cmd, @args) = @_;
     
-    my $usage = "unknown argument $cmd, choose one of statusRequest:noArg on:noArg off:noArg setStream register setStreamLocation";
+    my $usage = "unknown argument $cmd, choose one of statusRequest:noArg setStream register setStreamLocation";
 
     if($cmd eq "statusRequest")
     {
-		Log 1, "SnapControl ($name) - received: ".DevIo_Expect($hash, "{\"id\":32494,\"jsonrpc\":\"2.0\",\"method\":\"Server.GetStatus\"}\n", 5);
+	my $answer = DevIo_Expect($hash, "{\"id\":32494,\"jsonrpc\":\"2.0\",\"method\":\"Server.GetStatus\"}\n", 5);
+	chop($answer); #Snapcast-JSON-RPC ends JSON-Objects with \n, which needs to be choped off
+	chop($answer);
+	chop($answer);
+	Log 1, "SnapControl ($name) - received: ".$answer;
+	local $@;
+	my $response = eval { decode_json($answer)};
+	if($@){
+		if($response->{id} eq "32494"){
+			#messages with id 32494 are server-status answers
+			Log3 $name, 5, "SnaPControl ($name) - received: $response"; 
+			foreach my $nextGroup (@{$response->{result}->{server}->{groups}}){
+				my $groupID=$nextGroup->{id};
+				Log3 $name, 5, "a GroupID: $groupID";
+				foreach my $nextClient (@{$nextGroup->{clients}}){
+					$streamClients{${$nextClient->{id}}}=$groupID;
+					#saving every clientID and the groupID of their assigned group
+					Log3 $name, 5, "Client Group-Combo: $groupID - ".$streamClients{${$nextClient->{id}}}; 
+					}
+				}
+			}
+		}
         #DevIo_SimpleWrite($hash, "{\"id\":32494,\"jsonrpc\":\"2.0\",\"method\":\"Server.GetStatus\"}\n", 2);
     }elsif($cmd eq "setStream")
     {
 		if($args[0] eq "spotify")
 		{
-			my @match = ();
-			@match = grep $_ eq $args[3], $hash->{ALLOWEDUSERS};
-			#if (@match != 0){
+			if (grep { $_ eq $args[3] } @{$hash->{helper}}){ #check if stream-Name was registered
 			Log 1, "{\"id\":8,\"jsonrpc\":\"2.0\",\"method\":\"Stream.AddStream\",\"params\":{\"streamUri\":\"librespot:///librespot?name=".$args[3]."&username=".$args[1]."&password=".$args[2]."&killall=false\"}}\n";
 			DevIo_SimpleWrite($hash, "{\"id\":8,\"jsonrpc\":\"2.0\",\"method\":\"Stream.AddStream\",\"params\":{\"streamUri\":\"librespot:///librespot?name=".$args[3]."&username=".$args[1]."&password=".$args[2]."&killall=false\"}}\n", 2);
-			#} else {
+			} else {
 			Log 1, "Authentifikation für Anlegen eines Snapcast Stream fehlgeschlagen,".$args[3]." ist nicht als gültige MAC-Adresse gespeichert!";
-			#}
+			}
         # DevIo_SimpleWrite($hash, "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Server.GetStatus\"}\n", 2);
 		}
     }elsif($cmd eq "register")
@@ -151,18 +179,16 @@ sub SnapControl_Set($$@)
 		#global array version (deprecated)
 		#push(@allowedUsers,$args[0]);
     }elsif($cmd eq "setStreamLocation")
-		#args[1] = location args[2] = user
     {
-		if($streamLocations{$args[1]}==$args[2]){
-			return;
-		}else{
-			my $groupID = $streamClients{$args[2]};
+			$recentLocation = $args[0];
+			$recentStream = $args[1];
+			#save values for use after server-answer
+			my $groupID = $streamClients{$args[0]};
 			if ($groupID ne ''){
 				DevIo_SimpleWrite($hash, "{\"id\":9,\"jsonrpc\":\"2.0\",\"method\":\"Group.SetStream\",\"params\":{\"id\":".$groupID."\",\"stream_id\":\"".$args[1]."\"}}",2);
 			}else{
-				Log 1, "There is no snapclient with the ID\"".$args[2].", snapclient IDs have to be set manually.";
+				Log 1, "There is no snapclient with the ID\"".$args[1]."\", snapclient IDs have to be set manually.";
 			}
-		}
     }
     else
     {
