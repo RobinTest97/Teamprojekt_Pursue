@@ -1,0 +1,19 @@
+userInfo:.* {
+
+my $counter = 0;
+my $refresh =3;
+
+while(ReadingsVal("userInfo",$counter.".macAdresse","?") ne "?" )
+{
+  
+my $username= ReadingsVal("userInfo",$counter.".username","?");
+my $mac = ReadingsVal("userInfo",$counter.".macAdresse","?");
+
+
+
+fhem("define ".$username."_ID_$counter PRESENCE  lan-bluetooth ".$mac." 127.0.0.1:5222 ".$refresh);
+
+$counter= $counter + 1;
+}
+
+    }
