@@ -85,7 +85,7 @@ Falls die Programmdatei vom Schritt 1 und anderen Geräte in FHEM vorhandenen si
 dann wird nach der Eingabe des Befehles ein neues Gerät, dessen Type „PresConnect2Snap“ ist, 
 erzeugt (siehe die Abbildung 1). Sonst werden die entsprechenden Fehlermeldungen in FHEMWEB angezeigt.
 
-![UberblickPC2SGeraet](ueberblick_PC2S_geraet.png)
+![UberblickPC2SGeraet](Audiostreaming-Control/Bilder/ueberblick_PC2S_geraet.png)
 
 #### Schritt 3: Beim „PRESENCE“-Gerät Attribut [„event-on-change-reading“](https://wiki.fhem.de/wiki/Event-on-change-reading) einrichten
 Um nur die Wertänderung des Raums zu erhalten, muss ein Attribut **event-on-change-reading** beim PRESENCE-Gerät hinzugefügt. 
