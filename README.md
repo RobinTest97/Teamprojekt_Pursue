@@ -95,14 +95,14 @@ Jedoch mithilfe des Attributs kann nun die Wertänderung gefiltert werden.
 Das Attribut **event-on-change-reading** kann direkt in FHEMWEB gesetzt. 
 Wie in der Abbildung 2 gezeigt wird, muss der Wert für das Attribut **event-on-change-reading** als "room" gesetzt werden.
 
-![ATTReventonchangereading](attr_eventonchangereading.png)#
+![ATTReventonchangereading](Audiostreaming-Control/Bilder/attr_eventonchangereading.png)
 
 Nach der Einstellung wird das Attribut sofort in FHEMWEB gesehen.
 
-![ATTReventonchangereadingErgebnis](attr_eventonchangereading_erg.png)
+![ATTReventonchangereadingErgebnis](Audiostreaming-Control/Bilder/attr_eventonchangereading_erg.png)
 # Teamprojekt_Pursue Nutzerverwaltung
 ## Nutzerverwaltung Architektur
-![Systemarchitektur Nutzerverwaltung](architektur_nutzerverwaltung.png)
+![Systemarchitektur Nutzerverwaltung](Benutzerverwaltung/Bilder/architektur_nutzerverwaltung.png)
 
 ## Implementierung der JSON-Nutzerverwaltung
 
@@ -119,14 +119,14 @@ Um eine JSON-Datei in der Oberfläche von FHEM zum Lesen verwenden zu können, l
 Die JSON-Datei kann dabei mittels „CRON“ in bestimmten, vorher festgelegten Intervallen abgerufen werden. 
 Die „Cron-Syntax“ wird hier verwendet, um die JSON-Datei alle 15 Minuten zu aktualisieren.
 
-![Cron-Interval](attr_userInfo_interval.png)
+![Cron-Interval](Benutzerverwaltung/Bilder/attr_userInfo_interval.png)
 
 #### Schritt 3: JSON Elemente lesen
 
 Im dritten Schritt wird die JSON-Datei mit Hilfe der Attribute readingList gelesen. 
 Darüber hinaus werden die Informationen mithilfe der Complete-Method des readingList aus der Dateiquelle extrahiert und in FHEM verwendbar gemacht.
 
-![ReadingList](attr_userInfo_readingList.png)
+![ReadingList](Benutzerverwaltung/Bilder/attr_userInfo_readingList.png)
 
 ## Übertragen der Readings aus JSONMod in Allowed
 
@@ -139,7 +139,7 @@ Für die Implementierung wird ein „Notify“ definiert wie folgt:
 #### Schritt 2
 Im "DEF-Editor" des "Notify" wird der folgende Code eingetragen.
 
-![DefEditorNotify](def_editor_notify.png)
+![DefEditorNotify](Benutzerverwaltung/Bilder/def_editor_notify.png)
 
 #### Schritt 3
 
@@ -147,7 +147,7 @@ Um das Notify zu aktivieren, muss ein Event im verknüpften Modul „userInfo“
 Auslöser dafür wäre entweder das manuelle oder das Intervall gesteuerte Lesen der JSON-Datei. 
 Das folgende Bild zeigt die automatische Übertragung der Benutzer mit deren Passwörten ins „Allowed“ Modul.
 
-![AutomatischeUebertragungAllowed](automatische_Uebertragung_Nutzer_Allowed.png)
+![AutomatischeUebertragungAllowed](Benutzerverwaltung/Bilder/automatische_Uebertragung_Nutzer_Allowed.png)
 
 ## Übertragen der MAC-Adresse aus JSONMod in Presence
 
@@ -161,13 +161,13 @@ Um die Geräte des Benutzers in der Umgebung zu erkennen, wird eine sepzifische 
 
 Im "DEF-Editor" des "Notify" wird der folgende Code eingetragen.
 
-![DefEditorNotify2](def_editor_notify2.png)
+![DefEditorNotify2](Benutzerverwaltung/Bilder/def_editor_notify2.png)
 
 #### Schritt 3
 
 Nach dem Auslösen des „userInfo_Presence_notify“ werden die folgenden Präsenzmodule mit dem Nutzernamen und ID angelegt. Das Ergebnis ist in folgender Abbildung zu sehen.
 
-![ErgebnisUserInfoPresenceNotify](ergebnis_userInfo_Presence_notify.png)
+![ErgebnisUserInfoPresenceNotify](Benutzerverwaltung/Bilder/ergebnis_userInfo_Presence_notify.png)
 
 ## Übertragen der MAC-Adresse aus JSONMod in SnapControl
 
@@ -181,7 +181,7 @@ Für die Implementierung wird ein „Notify“ definiert wie folgt:
 #### Schritt 2
 Im "DEF-Editor" des "Notify" wird der folgende Code eingetragen.
 
-![DefEditorNotify3](def_editor_notify3.png)
+![DefEditorNotify3](Benutzerverwaltung/Bilder/def_editor_notify3.png)
 
 
 
